@@ -1,0 +1,199 @@
+/* Copyright (C) 2024 PLAYERUNKNOWN Productions */
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000000;
+}
+
+#canvas-container {
+    position: absolute;
+    width: 100%;
+    height: 100vh;
+    opacity: 0;
+    animation: fadeIn 2s ease-in forwards;
+    cursor: default;
+}
+
+#canvas-container.hovering-sphere {
+    cursor: pointer;
+}
+
+#canvas-container.dragging-sphere {
+    cursor: grabbing;
+}
+
+#position-info {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #00ff00;
+    font-family: monospace;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 5px;
+    border-radius: 3px;
+}
+
+#deep-link {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px 24px;
+    border-radius: 30px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    opacity: 0;
+    animation: continuousFlash 2s infinite;
+}
+
+#deep-link.visible {
+    opacity: 1;
+}
+
+#deep-link:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+#deep-link-title {
+    color: #00ff00;
+    font-family: monospace;
+    font-size: 14px;
+    margin: 0 0 8px 0;
+    padding: 0;
+    font-weight: normal;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+#deep-link-anchor {
+    display: inline-block;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-family: monospace;
+    font-size: 14px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 0;
+    transform: translateY(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+}
+
+#deep-link-anchor.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#deep-link-anchor:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.arrow-container {
+    position: fixed;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.arrow-container.visible {
+    display: flex;
+}
+
+.arrow-text {
+    color: #00ff00;
+    font-family: monospace;
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+.arrow {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 15px solid #00ff00;
+    filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.5));
+    animation: arrow-bounce 1s infinite;
+}
+
+@keyframes arrow-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(10px);
+    }
+}
+
+/* Add continuous flashing animation for deep-link */
+@keyframes continuousFlash {
+    0% { background-color: rgba(0, 255, 0, 0); }
+    50% { background-color: rgba(0, 255, 0, 0.3); }
+    100% { background-color: rgba(0, 255, 0, 0); }
+}
+
+#deep-link {
+    animation: continuousFlash 2s infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#deep-link.visible {
+    opacity: 1;
+}
+
+/* Cursor styles */
+#canvas-container {
+    cursor: default;
+}
+
+#canvas-container.hovering-sphere {
+    cursor: pointer;
+}
+
+#canvas-container.dragging-sphere {
+    cursor: grabbing;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-10px);
+    }
+}
+  
