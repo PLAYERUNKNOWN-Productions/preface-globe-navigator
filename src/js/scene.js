@@ -1,6 +1,7 @@
 // Copyright (C) 2024 PLAYERUNKNOWN Productions
 
 import * as THREE from 'three';
+import { Sun } from './sun';
 
 export function createScene(container) {
     const scene = new THREE.Scene();
@@ -18,11 +19,11 @@ export function createScene(container) {
     const group = new THREE.Group();
     scene.add(group);
 
-    // Create light sprite and add it to the group instead of the scene
-    const lightSprite = createLightSprite();
-    group.add(lightSprite);
+    // Create sun and add it to the group
+    const sun = new Sun();
+    group.add(sun.group);
 
-    return { scene, camera, renderer, group, lightSprite };
+    return { scene, camera, renderer, group, sun };
 }
 
 export function createStars() {
@@ -55,19 +56,4 @@ export function createStars() {
     });
     
     return new THREE.Points(starsGeometry, starsMaterial);
-}
-
-// Add this new function to create the light sprite
-function createLightSprite() {
-    const spriteMaterial = new THREE.SpriteMaterial({
-        color: 0xffff00,
-        transparent: true,
-        opacity: 1.0,
-        depthWrite: false,
-        sizeAttenuation: true
-    });
-
-    const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(0.5, 0.5, 0.5);
-    return sprite;
 } 

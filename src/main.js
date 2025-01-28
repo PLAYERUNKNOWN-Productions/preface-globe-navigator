@@ -15,12 +15,12 @@ class App {
     }
 
     async init() {
-        // Modify the scene creation to get the lightSprite
-        const { scene, camera, renderer, group, lightSprite } = createScene(this.container);
+        const { scene, camera, renderer, group, sun } = createScene(this.container);
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
         this.group = group;
+        this.sun = sun;  // Store sun reference
 
         // Add stars
         const stars = createStars();
@@ -66,10 +66,10 @@ class App {
                 this.globe.setLightIntensity(intensity);
             }
         );
-        this.lightControls.setSprite(lightSprite);
+        this.lightControls.setSprite(this.sun.group);
 
-        // Set initial light position - directly use world space
-        lightSprite.position.copy(this.lightControls.lightPosition);
+        // Set initial light position
+        this.sun.group.position.copy(this.lightControls.lightPosition);
 
         // Start animation loop
         this.animate();
@@ -79,14 +79,17 @@ class App {
     }
 
     animate() {
+        const deltaTime = 1/60;
         requestAnimationFrame(this.animate.bind(this));
         
         if (this.eventManager.autoRotate) {
             this.group.rotation.y += this.eventManager.rotationSpeed;
         }
         
-        // Update light position and billboard
+        // Update light position and sun
         this.lightControls.update();
+        this.sun.update(deltaTime);
+        this.sun.updateOrientation(this.camera);
         
         this.eventManager.updateMarkerAnimation();
         this.renderer.render(this.scene, this.camera);
