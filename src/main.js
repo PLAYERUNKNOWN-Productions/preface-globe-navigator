@@ -1,4 +1,4 @@
-// Copyright (C) 2024 PLAYERUNKNOWN Productions
+// Copyright (C) 2025 PLAYERUNKNOWN Productions
 
 import * as THREE from 'three';
 import { createScene, createStars } from './js/scene';
