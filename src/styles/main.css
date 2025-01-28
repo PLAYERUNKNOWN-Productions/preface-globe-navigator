@@ -196,4 +196,35 @@ body, html {
         transform: translateX(-50%) translateY(-10px);
     }
 }
+
+.light-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    color: #00ff00;
+    font-family: monospace;
+}
+
+.light-controls div {
+    margin-bottom: 10px;
+}
+
+.light-controls label {
+    display: inline-block;
+    width: 80px;
+}
+
+.light-controls input[type="range"] {
+    width: 150px;
+    margin: 0 10px;
+}
+
+.light-controls span {
+    display: inline-block;
+    width: 40px;
+    text-align: right;
+}
   

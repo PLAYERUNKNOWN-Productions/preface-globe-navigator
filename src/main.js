@@ -5,6 +5,7 @@ import { createScene, createStars } from './js/scene';
 import { Globe } from './js/sphere';
 import { EventManager } from './js/eventHandlers';
 import { TextureLoader } from './js/textureLoader';
+import { LightControls } from './js/lightControls';
 import './styles/main.css';
 
 class App {
@@ -57,6 +58,16 @@ class App {
             this.cursor
         );
 
+        // Create light controls
+        this.lightControls = new LightControls(
+            this.container,
+            (position, intensity) => {
+                this.globe.material.uniforms.lightPosition.value.copy(position);
+                this.globe.setLightIntensity(intensity);
+            }
+        );
+
+
         // Start animation loop
         this.animate();
         
@@ -70,7 +81,11 @@ class App {
         if (this.eventManager.autoRotate) {
             this.group.rotation.y += this.eventManager.rotationSpeed;
         }
-
+        
+        // Update light position and billboard
+        this.lightControls.update();
+        const lightPos = this.globe.material.uniforms.lightPosition.value;
+        
         this.eventManager.updateMarkerAnimation();
         this.renderer.render(this.scene, this.camera);
     }
