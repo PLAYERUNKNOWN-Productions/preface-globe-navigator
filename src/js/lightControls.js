@@ -8,6 +8,8 @@ export class LightControls {
         this.autoOrbit = false;
         this.orbitSpeed = 0.001;
         this.lightIntensity = 1.0;
+        this.sprite = null;
+        this.camera = null;
         this.createControls();
     }
 
@@ -35,6 +37,11 @@ export class LightControls {
                 this.lightPosition[axis] = parseFloat(e.target.value);
                 value.textContent = this.lightPosition[axis].toFixed(1);
                 this.onUpdate(this.lightPosition, this.lightIntensity);
+                
+                // Update sprite position when sliders change - directly use world space
+                if (this.sprite) {
+                    this.sprite.position.copy(this.lightPosition);
+                }
             });
             
             const container = document.createElement('div');
@@ -91,6 +98,14 @@ export class LightControls {
         controls.appendChild(container);
     }
 
+    setSprite(sprite) {
+        this.sprite = sprite;
+    }
+
+    setCamera(camera) {
+        this.camera = camera;
+    }
+
     update() {
         if (this.autoOrbit) {
             // Rotate light around Y axis
@@ -103,6 +118,11 @@ export class LightControls {
             this.lightPosition.z = x * sin + z * cos;
             
             this.onUpdate(this.lightPosition, this.lightIntensity);
+        }
+
+        // Update sprite position if it exists - directly use world space position
+        if (this.sprite) {
+            this.sprite.position.copy(this.lightPosition);
         }
     }
 } 

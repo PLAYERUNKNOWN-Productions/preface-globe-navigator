@@ -15,8 +15,8 @@ class App {
     }
 
     async init() {
-        // Create scene and basic elements
-        const { scene, camera, renderer, group } = createScene(this.container);
+        // Modify the scene creation to get the lightSprite
+        const { scene, camera, renderer, group, lightSprite } = createScene(this.container);
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
@@ -58,7 +58,7 @@ class App {
             this.cursor
         );
 
-        // Create light controls
+        // Create light controls and pass the sprite
         this.lightControls = new LightControls(
             this.container,
             (position, intensity) => {
@@ -66,7 +66,10 @@ class App {
                 this.globe.setLightIntensity(intensity);
             }
         );
+        this.lightControls.setSprite(lightSprite);
 
+        // Set initial light position - directly use world space
+        lightSprite.position.copy(this.lightControls.lightPosition);
 
         // Start animation loop
         this.animate();
@@ -84,7 +87,6 @@ class App {
         
         // Update light position and billboard
         this.lightControls.update();
-        const lightPos = this.globe.material.uniforms.lightPosition.value;
         
         this.eventManager.updateMarkerAnimation();
         this.renderer.render(this.scene, this.camera);
