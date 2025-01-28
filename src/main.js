@@ -6,6 +6,8 @@ import { Globe } from './js/sphere';
 import { EventManager } from './js/eventHandlers';
 import { TextureLoader } from './js/textureLoader';
 import { LightControls } from './js/lightControls';
+import { SunPositionControls } from './js/sunPositionControls';
+import { Sun } from './js/sun';
 import './styles/main.css';
 
 class App {
@@ -42,6 +44,9 @@ class App {
         this.globe = new Globe();
         this.group.add(this.globe.mesh);
 
+        // Connect sun and globe for lighting
+        this.sun.setGlobe(this.globe);
+
         // Load textures
         const textureLoader = new TextureLoader();
         const cubeTexture = await textureLoader.loadTextures();
@@ -58,18 +63,24 @@ class App {
             this.cursor
         );
 
-        // Create light controls and pass the sprite
+        // Create light controls and pass the sprite and sun
         this.lightControls = new LightControls(
             this.container,
             (position, intensity) => {
                 this.globe.material.uniforms.lightPosition.value.copy(position);
                 this.globe.setLightIntensity(intensity);
-            }
+            },
+            this.sun  // Pass sun reference
         );
         this.lightControls.setSprite(this.sun.group);
 
-        // Set initial light position
-        this.sun.group.position.copy(this.lightControls.lightPosition);
+        // Update debug mode toggle
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'd') {  // press D to toggle debug mode
+                Sun.setDebugMode(!Sun.isDebugMode());
+                this.lightControls.updateVisibility();
+            }
+        });
 
         // Start animation loop
         this.animate();

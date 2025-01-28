@@ -1,80 +1,45 @@
 import * as THREE from 'three';
+import { Sun } from './sun';
 
 export class LightControls {
-    constructor(container, onUpdate) {
+    constructor(container, onUpdate, sun) {
         this.container = container;
         this.onUpdate = onUpdate;
+        this.sun = sun;
         this.lightPosition = new THREE.Vector3(5, 0, 0);
-        this.autoOrbit = false;
-        this.orbitSpeed = 0.001;
         this.lightIntensity = 1.0;
         this.sprite = null;
         this.camera = null;
+        this.controls = null;
         this.createControls();
     }
 
     createControls() {
-        const controls = document.createElement('div');
-        controls.className = 'light-controls';
+        this.controls = document.createElement('div');
+        this.controls.className = 'light-controls';
         
-        // Create sliders for X, Y, Z coordinates
-        const axes = ['x', 'y', 'z'];
-        axes.forEach(axis => {
-            const label = document.createElement('label');
-            label.textContent = `Light ${axis.toUpperCase()}:`;
-            
-            const slider = document.createElement('input');
-            slider.type = 'range';
-            slider.min = '-10';
-            slider.max = '10';
-            slider.step = '0.1';
-            slider.value = this.lightPosition[axis];
-            
-            const value = document.createElement('span');
-            value.textContent = this.lightPosition[axis].toFixed(1);
-            
-            slider.addEventListener('input', (e) => {
-                this.lightPosition[axis] = parseFloat(e.target.value);
-                value.textContent = this.lightPosition[axis].toFixed(1);
-                this.onUpdate(this.lightPosition, this.lightIntensity);
-                
-                // Update sprite position when sliders change - directly use world space
-                if (this.sprite) {
-                    this.sprite.position.copy(this.lightPosition);
-                }
-            });
-            
-            const container = document.createElement('div');
-            container.appendChild(label);
-            container.appendChild(slider);
-            container.appendChild(value);
-            controls.appendChild(container);
-        });
-
-        // Add auto-orbit toggle
-        const orbitContainer = document.createElement('div');
-        const orbitLabel = document.createElement('label');
-        orbitLabel.textContent = 'Auto Orbit:';
-        const orbitCheckbox = document.createElement('input');
-        orbitCheckbox.type = 'checkbox';
-        orbitCheckbox.checked = this.autoOrbit;
-        orbitCheckbox.addEventListener('change', (e) => {
-            this.autoOrbit = e.target.checked;
-        });
-        orbitContainer.appendChild(orbitLabel);
-        orbitContainer.appendChild(orbitCheckbox);
-        controls.appendChild(orbitContainer);
+        // Set initial visibility based on debug mode
+        const isVisible = Sun.isDebugMode();
+        this.controls.style.display = isVisible ? 'block' : 'none';
+        this.controls.style.visibility = isVisible ? 'visible' : 'hidden';
+        this.controls.style.opacity = isVisible ? '1' : '0';
 
         // Add intensity control
-        this.createIntensityControl(controls);
+        this.createIntensityControl(this.controls);
+        
+        // Add phi offset control
+        this.createPhiControl(this.controls);
+        
+        // Add theta offset control
+        this.createThetaControl(this.controls);
 
-        this.container.appendChild(controls);
+        this.container.appendChild(this.controls);
     }
 
     createIntensityControl(controls) {
         const container = document.createElement('div');
         const label = document.createElement('label');
-        label.textContent = 'Intensity:';
+        label.textContent = 'Light Intensity:';
         
         const slider = document.createElement('input');
         slider.type = 'range';
@@ -98,6 +63,60 @@ export class LightControls {
         controls.appendChild(container);
     }
 
+    createPhiControl(controls) {
+        const container = document.createElement('div');
+        const label = document.createElement('label');
+        label.textContent = 'Phi Offset:';
+        
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = '0';
+        slider.max = '180';
+        slider.step = '1';
+        slider.value = this.sun.phiOffset;
+        
+        const value = document.createElement('span');
+        value.textContent = this.sun.phiOffset.toFixed(1);
+        
+        slider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            this.sun.setPhiOffset(val);
+            value.textContent = val.toFixed(1);
+        });
+        
+        container.appendChild(label);
+        container.appendChild(slider);
+        container.appendChild(value);
+        controls.appendChild(container);
+    }
+
+    createThetaControl(controls) {
+        const container = document.createElement('div');
+        const label = document.createElement('label');
+        label.textContent = 'Theta Offset:';
+        
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = '0';
+        slider.max = '360';
+        slider.step = '1';
+        slider.value = this.sun.thetaOffset;
+        
+        const value = document.createElement('span');
+        value.textContent = this.sun.thetaOffset.toFixed(1);
+        
+        slider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            this.sun.setThetaOffset(val);
+            value.textContent = val.toFixed(1);
+        });
+        
+        container.appendChild(label);
+        container.appendChild(slider);
+        container.appendChild(value);
+        controls.appendChild(container);
+    }
+
     setSprite(sprite) {
         this.sprite = sprite;
     }
@@ -107,22 +126,18 @@ export class LightControls {
     }
 
     update() {
-        if (this.autoOrbit) {
-            // Rotate light around Y axis
-            const x = this.lightPosition.x;
-            const z = this.lightPosition.z;
-            const cos = Math.cos(this.orbitSpeed);
-            const sin = Math.sin(this.orbitSpeed);
-            
-            this.lightPosition.x = x * cos - z * sin;
-            this.lightPosition.z = x * sin + z * cos;
-            
-            this.onUpdate(this.lightPosition, this.lightIntensity);
-        }
-
-        // Update sprite position if it exists - directly use world space position
+        // Update sprite position if it exists
         if (this.sprite) {
             this.sprite.position.copy(this.lightPosition);
+        }
+    }
+
+    updateVisibility() {
+        if (this.controls) {
+            const isVisible = Sun.isDebugMode();
+            this.controls.style.display = isVisible ? 'block' : 'none';
+            this.controls.style.visibility = isVisible ? 'visible' : 'hidden';
+            this.controls.style.opacity = isVisible ? '1' : '0';
         }
     }
 } 

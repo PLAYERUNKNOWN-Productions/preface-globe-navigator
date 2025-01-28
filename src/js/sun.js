@@ -30,7 +30,19 @@ export class Sun {
                 MIDDLE: { STOP: 0.3, COLOR: 'rgba(255, 230, 150, 0.3)' },
                 OUTER: { STOP: 1, COLOR: 'rgba(255, 200, 100, 0)' }
             }
-        }
+        },
+        EARTH: {
+            OBLIQUITY: 23.439, // Earth's axial tilt in degrees
+            J2000_EPOCH: 2451545.0, // Julian date for J2000 epoch (2000 January 1.5)
+            SUN_DISTANCE: 25 // Distance from Earth to Sun in arbitrary units
+        },
+        POSITION: {
+            PHI_OFFSET: 90,    // Default offset for phi
+            THETA_OFFSET: 120,  // Default offset for theta
+        },
+        DEBUG: {
+            ENABLED: false  // Debug mode off by default
+        },
     };
 
     /**
@@ -38,7 +50,10 @@ export class Sun {
      */
     constructor() {
         this.group = new THREE.Group();
+        this.phiOffset = Sun.CONFIG.POSITION.PHI_OFFSET;
+        this.thetaOffset = Sun.CONFIG.POSITION.THETA_OFFSET;
         this.createSun();
+        this.updateSunPosition(new Date()); // Initialize position
     }
 
     /**
@@ -195,7 +210,120 @@ export class Sun {
         return texture;
     }
 
+    /**
+     * Calculates sun position based on date
+     * @param {Date} date - Current date and time
+     * @returns {{longitude: number, latitude: number}} Sun's position
+     */
+    calculateSunPosition(date) {
+        // Convert date to Julian date
+        const julianDate = this.dateToJulianDate(date);
+        const d = julianDate - Sun.CONFIG.EARTH.J2000_EPOCH;
+
+        // Calculate Sun's mean anomaly
+        const g = this.wrapDegrees(357.529 + 0.98560028 * d);
+        const gRad = THREE.MathUtils.degToRad(g);
+
+        // Calculate Sun's mean longitude
+        const q = this.wrapDegrees(280.459 + 0.98564736 * d);
+
+        // Calculate Sun's apparent ecliptic longitude
+        const l = this.wrapDegrees(q + 1.915 * Math.sin(gRad) + 0.020 * Math.sin(2 * gRad));
+        const lRad = THREE.MathUtils.degToRad(l);
+
+        // Calculate mean obliquity of the ecliptic
+        const e = Sun.CONFIG.EARTH.OBLIQUITY - 0.00000036 * d;
+        const eRad = THREE.MathUtils.degToRad(e);
+
+        // Calculate right ascension and declination
+        const ra = Math.atan2(Math.cos(eRad) * Math.sin(lRad), Math.cos(lRad));
+        const dec = Math.asin(Math.sin(eRad) * Math.sin(lRad));
+
+        // Calculate Greenwich Mean Sidereal Time
+        const t = d / 36525.0;
+        const gmst = this.wrapDegrees(280.46061837 + 360.98564736629 * d + 
+                                    0.000387933 * t * t - t * t * t / 38710000.0);
+
+        // Calculate final position
+        const longitude = this.wrapDegrees(THREE.MathUtils.radToDeg(ra) - gmst);
+        const latitude = THREE.MathUtils.radToDeg(dec);
+
+        return { longitude, latitude };
+    }
+
+    /**
+     * Updates sun position based on current date
+     * @param {Date} date - Current date and time
+     */
+    updateSunPosition(date) {
+        const { longitude, latitude } = this.calculateSunPosition(date);
+        
+        // Convert to radians for spherical coordinates using offsets
+        const phi = THREE.MathUtils.degToRad(this.phiOffset - latitude);
+        const theta = THREE.MathUtils.degToRad(longitude + this.thetaOffset);
+        
+        // Convert spherical coordinates to Cartesian with larger radius
+        const radius = Sun.CONFIG.EARTH.SUN_DISTANCE;
+        this.group.position.setFromSphericalCoords(radius, phi, theta);
+
+        // Scale the sun based on distance to maintain apparent size
+        const scale = radius * 0.04;
+        this.group.scale.set(scale, scale, scale);
+
+        // Update the globe's light position uniform to match sun position
+        if (this.globe) {
+            // Update the light position in the globe's shader
+            this.globe.material.uniforms.lightPosition.value.copy(this.group.position);
+        }
+    }
+
+    /**
+     * Sets reference to the globe for lighting updates
+     * @param {Globe} globe - The globe instance
+     */
+    setGlobe(globe) {
+        this.globe = globe;
+    }
+
+    /**
+     * Converts Date to Julian date
+     * @private
+     * @param {Date} date - Date to convert
+     * @returns {number} Julian date
+     */
+    dateToJulianDate(date) {
+        const year = date.getUTCFullYear();
+        const month = date.getUTCMonth() + 1;
+        const day = date.getUTCDate();
+        const hour = date.getUTCHours();
+        const minute = date.getUTCMinutes();
+        const second = date.getUTCSeconds();
+
+        const y = month > 2 ? year : year - 1;
+        const m = month > 2 ? month : month + 12;
+        const d = day + hour/24.0 + minute/1440.0 + second/86400.0;
+
+        const a = Math.floor(y/100);
+        const b = 2 - a + Math.floor(a/4);
+
+        return Math.floor(365.25*(y + 4716)) + Math.floor(30.6001*(m + 1)) + d + b - 1524.5;
+    }
+
+    /**
+     * Wraps degrees to range [-180, 180]
+     * @private
+     * @param {number} degrees - Angle in degrees
+     * @returns {number} Wrapped angle in degrees
+     */
+    wrapDegrees(degrees) {
+        degrees = degrees % 360;
+        return degrees > 180 ? degrees - 360 : degrees;
+    }
+
     update(deltaTime) {
+        // Update sun position based on current time
+        this.updateSunPosition(new Date());
+
         // Update shader time for all sun planes
         this.group.children.forEach(child => {
             if (child.material && child.material.uniforms) {
@@ -280,4 +408,23 @@ export class Sun {
             gl_FragColor = vec4(finalColor, alpha);
         }
     `;
+
+    setPhiOffset(offset) {
+        this.phiOffset = offset;
+        this.updateSunPosition(new Date());
+    }
+
+    setThetaOffset(offset) {
+        this.thetaOffset = offset;
+        this.updateSunPosition(new Date());
+    }
+
+    // Add getter/setter for debug mode
+    static setDebugMode(enabled) {
+        Sun.CONFIG.DEBUG.ENABLED = enabled;
+    }
+
+    static isDebugMode() {
+        return Sun.CONFIG.DEBUG.ENABLED;
+    }
 } 

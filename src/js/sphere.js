@@ -72,7 +72,7 @@ export class Globe {
             uniforms: {
                 tCube: { value: null }, // Cube texture
                 lightPosition: { value: new THREE.Vector3(5, 0, 0) }, // Light position in world space
-                lightIntensity: { value: 1.0 },
+                lightIntensity: { value: 2.0 },
                 ambientIntensity: { value: 0.01 } // Ambient light level
             },
             vertexShader: this.getVertexShader(),

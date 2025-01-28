@@ -52,6 +52,21 @@ export class EventManager {
         
         this.setupEventListeners();
         this.setupMarkers();
+
+        // Add method to check if we're interacting with UI
+        this.isInteractingWithUI = false;
+        
+        // Add event listeners for UI interaction
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.light-controls')) {
+                this.isInteractingWithUI = true;
+                e.stopPropagation();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            this.isInteractingWithUI = false;
+        });
     }
 
     setupMarkers() {
@@ -135,6 +150,9 @@ export class EventManager {
     }
 
     handleMouseMove(event) {
+        if (this.isInteractingWithUI) {
+            return; // Skip orbit control if interacting with UI
+        }
         const rect = this.container.getBoundingClientRect();
         this.mouse.x = ((event.clientX - rect.left) / this.container.clientWidth) * 2 - 1;
         this.mouse.y = -((event.clientY - rect.top) / this.container.clientHeight) * 2 + 1;
@@ -229,6 +247,9 @@ export class EventManager {
     }
 
     handleMouseDown(event) {
+        if (this.isInteractingWithUI) {
+            return; // Skip orbit control if interacting with UI
+        }
         const rect = this.container.getBoundingClientRect();
         this.previousMousePosition = {
             x: event.clientX - rect.left,
@@ -246,6 +267,9 @@ export class EventManager {
     }
 
     handleMouseUp() {
+        if (this.isInteractingWithUI) {
+            return; // Skip orbit control if interacting with UI
+        }
         this.isDragging = false;
         // Restore cursor state
         this.container.classList.remove('dragging-sphere');
@@ -255,6 +279,9 @@ export class EventManager {
     }
 
     handleMouseLeave() {
+        if (this.isInteractingWithUI) {
+            return; // Skip orbit control if interacting with UI
+        }
         this.isDragging = false;
         this.cursor.visible = false;
         this.positionInfo.textContent = 'Lat: -- Long: --';

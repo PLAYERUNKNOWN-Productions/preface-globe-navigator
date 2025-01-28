@@ -198,7 +198,7 @@ body, html {
 }
 
 .light-controls {
-    position: absolute;
+    position: fixed;
     top: 20px;
     right: 20px;
     background: rgba(0, 0, 0, 0.7);
@@ -206,6 +206,10 @@ body, html {
     border-radius: 8px;
     color: #00ff00;
     font-family: monospace;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    opacity: 1;
+    visibility: visible;
+    z-index: 1000;
 }
 
 .light-controls div {
@@ -214,7 +218,7 @@ body, html {
 
 .light-controls label {
     display: inline-block;
-    width: 80px;
+    width: 120px;  /* Increased to accommodate longer labels */
 }
 
 .light-controls input[type="range"] {
@@ -226,5 +230,41 @@ body, html {
     display: inline-block;
     width: 40px;
     text-align: right;
+}
+
+.light-controls[style*="display: none"] {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.sun-position-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 5px;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.sun-position-controls div {
+    margin-bottom: 10px;
+}
+
+.sun-position-controls label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.sun-position-controls input[type="range"] {
+    width: 200px;
+    margin-right: 10px;
+}
+
+.sun-position-controls span {
+    display: inline-block;
+    min-width: 40px;
 }
   
