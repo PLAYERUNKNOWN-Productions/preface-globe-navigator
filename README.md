@@ -8,6 +8,8 @@ Explore the immense size of [Preface](https://store.steampowered.com/app/2820060
 
 Clicking on the planet will generate a deep link that you can share with others to take them to that exact location!
 
+[Online DEMO](https://playerunknown-productions.github.io/preface-globe-navigator/)
+
 ## Features
 
 - Interactive 3D globe navigation
