@@ -1,6 +1,7 @@
-// Copyright (C) 2024 PLAYERUNKNOWN Productions
+// Copyright (C) 2025 PLAYERUNKNOWN Productions
 
 import * as THREE from 'three';
+import { Sun } from './sun';
 
 export function createScene(container) {
     const scene = new THREE.Scene();
@@ -18,7 +19,11 @@ export function createScene(container) {
     const group = new THREE.Group();
     scene.add(group);
 
-    return { scene, camera, renderer, group };
+    // Create sun and add it to the group
+    const sun = new Sun();
+    group.add(sun.group);
+
+    return { scene, camera, renderer, group, sun };
 }
 
 export function createStars() {

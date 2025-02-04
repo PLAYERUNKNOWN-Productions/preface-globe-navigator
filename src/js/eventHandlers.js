@@ -1,4 +1,4 @@
-// Copyright (C) 2024 PLAYERUNKNOWN Productions
+// Copyright (C) 2025 PLAYERUNKNOWN Productions
 
 import * as THREE from 'three';
 import { getLatLong, calculateCameraOrientation } from './utils';
@@ -52,6 +52,24 @@ export class EventManager {
         
         this.setupEventListeners();
         this.setupMarkers();
+
+        // Add method to check if we're interacting with UI
+        this.isInteractingWithUI = false;
+        
+        // Add event listeners for UI interaction
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.light-controls')) {
+                this.isInteractingWithUI = true;
+                e.stopPropagation();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            this.isInteractingWithUI = false;
+        });
+
+        // Create controls info overlay
+        this.createControlsInfo();
     }
 
     setupMarkers() {
@@ -135,6 +153,9 @@ export class EventManager {
     }
 
     handleMouseMove(event) {
+        if (this.isInteractingWithUI) {
+            return; // Skip orbit control if interacting with UI
+        }
         const rect = this.container.getBoundingClientRect();
         this.mouse.x = ((event.clientX - rect.left) / this.container.clientWidth) * 2 - 1;
         this.mouse.y = -((event.clientY - rect.top) / this.container.clientHeight) * 2 + 1;
@@ -229,6 +250,9 @@ export class EventManager {
     }
 
     handleMouseDown(event) {
+        if (this.isInteractingWithUI) {
+            return; // Skip orbit control if interacting with UI
+        }
         const rect = this.container.getBoundingClientRect();
         this.previousMousePosition = {
             x: event.clientX - rect.left,
@@ -246,6 +270,9 @@ export class EventManager {
     }
 
     handleMouseUp() {
+        if (this.isInteractingWithUI) {
+            return; // Skip orbit control if interacting with UI
+        }
         this.isDragging = false;
         // Restore cursor state
         this.container.classList.remove('dragging-sphere');
@@ -255,6 +282,9 @@ export class EventManager {
     }
 
     handleMouseLeave() {
+        if (this.isInteractingWithUI) {
+            return; // Skip orbit control if interacting with UI
+        }
         this.isDragging = false;
         this.cursor.visible = false;
         this.positionInfo.textContent = 'Lat: -- Long: --';
@@ -269,12 +299,23 @@ export class EventManager {
         const zoomSpeed = 0.001;
         const delta = event.deltaY * zoomSpeed;
         
+        // Store current camera orientation
+        const currentQuaternion = this.camera.quaternion.clone();
+        const currentUp = this.camera.up.clone();
+        
+        // Update distance
         this.currentDistance = Math.max(this.minDistance, 
             Math.min(this.maxDistance, this.currentDistance + delta));
         
+        // Update position while maintaining direction
         const direction = this.camera.position.clone().normalize();
         this.camera.position.copy(direction.multiplyScalar(this.currentDistance));
         
+        // Restore camera orientation
+        this.camera.quaternion.copy(currentQuaternion);
+        this.camera.up.copy(currentUp);
+        
+        // Ensure camera is still looking at center
         this.camera.lookAt(0, 0, 0);
     }
 
@@ -308,28 +349,34 @@ export class EventManager {
             y: currentPosition.y - this.previousMousePosition.y
         };
         
-        const rotationSpeed = 0.005;
+        const rotationSpeed = 0.003;
+
+        // Orbital rotation
+        const spherical = new THREE.Spherical();
+        spherical.setFromVector3(this.camera.position);
         
-        // Get camera's right and up vectors in world space
-        const cameraRight = new THREE.Vector3(1, 0, 0);
-        cameraRight.applyQuaternion(this.camera.quaternion);
+        // Update theta (horizontal) and phi (vertical) angles
+        spherical.theta -= deltaMove.x * rotationSpeed;
+        // Invert vertical movement
+        spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi - deltaMove.y * rotationSpeed));
         
-        const cameraUp = new THREE.Vector3(0, 1, 0);
-        cameraUp.applyQuaternion(this.camera.quaternion);
+        // Update camera position while maintaining distance
+        const newPosition = new THREE.Vector3();
+        newPosition.setFromSpherical(spherical);
+        this.camera.position.copy(newPosition);
+
+        // Keep camera looking at center
+        this.camera.lookAt(0, 0, 0);
         
-        // Create rotation quaternions
-        const horizontalRotation = new THREE.Quaternion();
-        horizontalRotation.setFromAxisAngle(cameraUp, deltaMove.x * rotationSpeed);
+        // Keep camera upright except near poles
+        const upVector = new THREE.Vector3(0, 1, 0);
+        const camToCenter = new THREE.Vector3().subVectors(new THREE.Vector3(0, 0, 0), this.camera.position).normalize();
+        const dot = Math.abs(camToCenter.dot(upVector));
         
-        const verticalRotation = new THREE.Quaternion();
-        verticalRotation.setFromAxisAngle(cameraRight, deltaMove.y * rotationSpeed);
-        
-        // Combine rotations
-        const combinedRotation = new THREE.Quaternion();
-        combinedRotation.multiplyQuaternions(horizontalRotation, verticalRotation);
-        
-        // Apply to group
-        this.group.quaternion.multiplyQuaternions(combinedRotation, this.group.quaternion);
+        if (dot < 0.99) {
+            // Not at poles - keep camera upright
+            this.camera.up.set(0, 1, 0);
+        }
         
         this.previousMousePosition = currentPosition;
     }
@@ -367,6 +414,18 @@ export class EventManager {
             <div class="arrow"></div>
         `;
         document.body.appendChild(this.arrowContainer);
+    }
+
+    createControlsInfo() {
+        const controlsInfo = document.createElement('div');
+        controlsInfo.className = 'controls-info';
+        controlsInfo.innerHTML = `
+            <div class="controls-title">Controls</div>
+            <div class="control-item">🖱️ Drag: Orbit camera</div>
+            <div class="control-item">⚙️ Mouse wheel: Zoom</div>
+            <div class="control-item">🎯 Click: Create marker</div>
+        `;
+        document.body.appendChild(controlsInfo);
     }
 
     // ... Other handler methods ...

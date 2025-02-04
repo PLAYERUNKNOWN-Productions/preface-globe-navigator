@@ -1,4 +1,4 @@
-// Copyright (C) 2024 PLAYERUNKNOWN Productions
+// Copyright (C) 2025 PLAYERUNKNOWN Productions
 
 import * as THREE from 'three';
 
@@ -71,6 +71,9 @@ export class Globe {
         return new THREE.ShaderMaterial({
             uniforms: {
                 tCube: { value: null }, // Cube texture
+                lightPosition: { value: new THREE.Vector3(5, 0, 0) }, // Light position in world space
+                lightIntensity: { value: 2.0 },
+                ambientIntensity: { value: 0.01 } // Ambient light level
             },
             vertexShader: this.getVertexShader(),
             fragmentShader: this.getFragmentShader(),
@@ -84,13 +87,24 @@ export class Globe {
      */
     getVertexShader() {
         return `
-            attribute vec3 originalPosition; // Original cube position for texture mapping
+            attribute vec3 originalPosition;
+            uniform vec3 lightPosition; // Light position in world space
+            
             varying vec3 vCubePosition;
+            varying vec3 vWorldPosition;
+            varying vec3 vWorldLightPosition;
 
             void main() {
                 // Pass original cube positions to fragment shader
                 vCubePosition = originalPosition;
-
+                
+                // Calculate world position for lighting
+                vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+                vWorldPosition = worldPosition.xyz;
+                
+                // Transform light position to world space
+                vWorldLightPosition = (modelMatrix * vec4(lightPosition, 1.0)).xyz;
+                
                 // Transform vertex into clip space
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
             }
@@ -104,16 +118,39 @@ export class Globe {
      */
     getFragmentShader() {
         return `
-            uniform samplerCube tCube; // Cube texture sampler
+            uniform samplerCube tCube;
+            uniform float lightIntensity;
+            uniform float ambientIntensity;
+            
             varying vec3 vCubePosition;
+            varying vec3 vWorldPosition;
+            varying vec3 vWorldLightPosition;
 
             void main() {
-                // Use the normalized original cube coordinate to sample the cube texture
+                // Sample base color from cube texture
                 vec4 texColor = textureCube(tCube, normalize(vCubePosition));
-
+                
+                // Calculate light direction in world space using transformed light position
+                vec3 L = normalize(vWorldLightPosition - vWorldPosition);
+                
+                // Calculate normal in world space (same as normalized position for a sphere)
+                vec3 N = normalize(vWorldPosition);
+                
+                // Calculate diffuse lighting
+                float diff = max(dot(N, L), 0.0);
+                
+                // Calculate if point is in shadow (on dark side of planet)
+                float inShadow = step(dot(N, L), 0.0);
+                
+                // Combine ambient and diffuse lighting
+                float lighting = ambientIntensity + (1.0 - inShadow) * diff * lightIntensity;
+                
+                // Apply lighting to texture color
+                vec3 finalColor = texColor.rgb * lighting;
+                
                 // Convert from linear space to sRGB for correct final appearance
-                vec3 sRGBColor = pow(texColor.rgb, vec3(0.4545));
-
+                vec3 sRGBColor = pow(finalColor, vec3(0.4545));
+                
                 gl_FragColor = vec4(sRGBColor, texColor.a);
             }
         `;
@@ -149,5 +186,9 @@ export class Globe {
         };
 
         requestAnimationFrame(animate);
+    }
+
+    setLightIntensity(intensity) {
+        this.material.uniforms.lightIntensity.value = intensity;
     }
 } 

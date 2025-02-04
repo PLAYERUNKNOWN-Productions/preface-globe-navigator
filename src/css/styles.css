@@ -1,0 +1,29 @@
+.sun-position-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 5px;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.sun-position-controls div {
+    margin-bottom: 10px;
+}
+
+.sun-position-controls label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.sun-position-controls input[type="range"] {
+    width: 200px;
+    margin-right: 10px;
+}
+
+.sun-position-controls span {
+    display: inline-block;
+    min-width: 40px;
+} 

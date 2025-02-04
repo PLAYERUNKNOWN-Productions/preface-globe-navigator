@@ -1,10 +1,13 @@
-// Copyright (C) 2024 PLAYERUNKNOWN Productions
+// Copyright (C) 2025 PLAYERUNKNOWN Productions
 
 import * as THREE from 'three';
 import { createScene, createStars } from './js/scene';
 import { Globe } from './js/sphere';
 import { EventManager } from './js/eventHandlers';
 import { TextureLoader } from './js/textureLoader';
+import { LightControls } from './js/lightControls';
+import { SunPositionControls } from './js/sunPositionControls';
+import { Sun } from './js/sun';
 import './styles/main.css';
 
 class App {
@@ -14,12 +17,12 @@ class App {
     }
 
     async init() {
-        // Create scene and basic elements
-        const { scene, camera, renderer, group } = createScene(this.container);
+        const { scene, camera, renderer, group, sun } = createScene(this.container);
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
         this.group = group;
+        this.sun = sun;  // Store sun reference
 
         // Add stars
         const stars = createStars();
@@ -41,6 +44,9 @@ class App {
         this.globe = new Globe();
         this.group.add(this.globe.mesh);
 
+        // Connect sun and globe for lighting
+        this.sun.setGlobe(this.globe);
+
         // Load textures
         const textureLoader = new TextureLoader();
         const cubeTexture = await textureLoader.loadTextures();
@@ -57,6 +63,25 @@ class App {
             this.cursor
         );
 
+        // Create light controls and pass the sprite and sun
+        this.lightControls = new LightControls(
+            this.container,
+            (position, intensity) => {
+                this.globe.material.uniforms.lightPosition.value.copy(position);
+                this.globe.setLightIntensity(intensity);
+            },
+            this.sun  // Pass sun reference
+        );
+        this.lightControls.setSprite(this.sun.group);
+
+        // Update debug mode toggle
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'd') {  // press D to toggle debug mode
+                Sun.setDebugMode(!Sun.isDebugMode());
+                this.lightControls.updateVisibility();
+            }
+        });
+
         // Start animation loop
         this.animate();
         
@@ -65,12 +90,18 @@ class App {
     }
 
     animate() {
+        const deltaTime = 1/60;
         requestAnimationFrame(this.animate.bind(this));
         
         if (this.eventManager.autoRotate) {
             this.group.rotation.y += this.eventManager.rotationSpeed;
         }
-
+        
+        // Update light position and sun
+        this.lightControls.update();
+        this.sun.update(deltaTime);
+        this.sun.updateOrientation(this.camera);
+        
         this.eventManager.updateMarkerAnimation();
         this.renderer.render(this.scene, this.camera);
     }
