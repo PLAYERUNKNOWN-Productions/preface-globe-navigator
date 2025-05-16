@@ -253,21 +253,56 @@ export class Sun {
 
     /**
      * Updates sun position based on current date
+     * Based on Melba's mb_math.cpp::get_sun_zenith_and_direction()
+     * @param {Date} date - Current date and time
+     */
+    getSunZenithAndDirection(date) {
+        const { longitude, latitude } = this.calculateSunPosition(date);
+
+        const lonRad = THREE.MathUtils.degToRad(longitude);
+        const latRad = THREE.MathUtils.degToRad(latitude);
+
+        // Adapted from mb_math.cpp::spherical_to_cartesian()
+        const PI_2 = 1.57079632679489661923;
+        const phi = PI_2 - latRad;
+
+        const sinPhi = Math.sin(phi);
+        const cosPhi = Math.cos(phi);
+        const sinPhiR = sinPhi * 1.0;
+
+        const y = cosPhi * 1.0;
+        const z = sinPhiR * Math.cos(lonRad);
+        const x = sinPhiR * Math.sin(lonRad);
+
+        const sunPosNormalized = new THREE.Vector3(x, y, z).normalize();
+
+        //  Invert direction to get sun direction TOWARDS the planet's center
+        const sunLightDirection = sunPosNormalized.clone().multiplyScalar(-1.0);
+
+        return { longitude, latitude, sunLightDirection };
+    }
+
+    /**
+     * Updates sun position based on current date
      * @param {Date} date - Current date and time
      */
     updateSunPosition(date) {
-        const { longitude, latitude } = this.calculateSunPosition(date);
-        
-        // Convert to radians for spherical coordinates using offsets
-        const phi = THREE.MathUtils.degToRad(this.phiOffset - latitude);
-        const theta = THREE.MathUtils.degToRad(longitude + this.thetaOffset);
-        
-        // Convert spherical coordinates to Cartesian with larger radius
-        const radius = Sun.CONFIG.EARTH.SUN_DISTANCE;
-        this.group.position.setFromSphericalCoords(radius, phi, theta);
+        const { longitude, latitude, sunLightDirection } = this.getSunZenithAndDirection(date);
+
+        // Copied from mb_ecs_sys_techdemo_sun.cpp::mb_ecs_sys_update_sun()
+        const sunDistance = 6371000.0000000000 * 1.15;
+
+        const sunPos = sunLightDirection.clone().multiplyScalar(-sunDistance);
+        this.group.position.set(sunPos.x, sunPos.y, sunPos.z);
+
+        /* yields identical results as using sunPos
+        const phi = THREE.MathUtils.degToRad(90 - latitude); // polar angle
+        const theta = THREE.MathUtils.degToRad(longitude); // azimuthal angle
+        this.group.position.setFromSphericalCoords(sunDistance, phi, theta);
+        */
 
         // Scale the sun based on distance to maintain apparent size
-        const scale = radius * 0.04;
+        const scale = sunDistance * 0.04;
         this.group.scale.set(scale, scale, scale);
 
         // Update the globe's light position uniform to match sun position
