@@ -34,9 +34,32 @@ body, html {
     color: #00ff00;
     font-family: monospace;
     pointer-events: none;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 5px;
-    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    backdrop-filter: blur(4px);
+    max-width: 300px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+#biome-info {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #00ff00;
+    font-family: monospace;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    backdrop-filter: blur(4px);
+    max-width: 300px;
+    text-align: center;
+    line-height: 1.2;
 }
 
 #deep-link {
@@ -291,5 +314,57 @@ body, html {
 .control-item {
     margin: 5px 0;
     white-space: nowrap;
+}
+
+#planet-selector {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    color: #00ff00;
+    font-family: monospace;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#planet-selector label {
+    display: block;
+    margin-top: 150px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#planet-select {
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(0, 255, 0, 0.5);
+    color: #00ff00;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+#planet-select:hover {
+    border-color: rgba(0, 255, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
+}
+
+#planet-select:focus {
+    border-color: #00ff00;
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+}
+
+#planet-select option {
+    background: rgba(0, 0, 0, 0.95);
+    color: #00ff00;
+    padding: 8px;
 }
   

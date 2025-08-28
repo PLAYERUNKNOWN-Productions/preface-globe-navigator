@@ -4,19 +4,25 @@ import * as THREE from 'three';
 
 export class TextureLoader {
     constructor() {
-        this.texture_files = {
-            'posx': './images/LargeContinent_ReleaseCandidate_2_v2_500_texture.png',
-            'negx': './images/LargeContinent_ReleaseCandidate_2_v2_500_texture.png',
-            'posy': './images/LargeContinent_1311_v2_500_texture.png',
-            'negy': './images/LargeContinent_1311_v2_500_texture.png',
-            'posz': './images/LargeContinent_1311_v2_500_texture.png',
-            'negz': './images/LargeContinent_ReleaseCandidate_2_v2_500_texture.png'
-        };
+        this.planets = [];
     }
 
-    async loadTextures() {
-        const urls = ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
-            .map(face => this.texture_files[face]);
+    async init() {
+        try {
+            const response = await fetch('./planets.json');
+            const data = await response.json();
+            this.planets = data.planets;
+            console.log(`Loaded ${this.planets.length} planets from planets.json`);
+        } catch (error) {
+            console.error('Failed to load planets.json, falling back to default list:', error);
+            // Fallback to original hardcoded list if fetch fails
+            this.planets = ["bob"];
+        }
+    }
+
+    async loadTextures(planet_name) {
+        // const directions  ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
+        const urls = [0, 1, 2, 3, 4, 5].map( i => `./images/${planet_name}_${i}.png`)
 
         const loader = new THREE.CubeTextureLoader();
         const cubeTexture = await new Promise(resolve => {
