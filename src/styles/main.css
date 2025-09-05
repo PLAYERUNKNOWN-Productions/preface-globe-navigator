@@ -318,7 +318,7 @@ body, html {
 
 #planet-selector {
     position: fixed;
-    top: 20px;
+    top: 170px;
     left: 20px;
     background: rgba(0, 0, 0, 0.7);
     padding: 15px;
@@ -327,12 +327,11 @@ body, html {
     font-family: monospace;
     z-index: 1000;
     backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* border: 1px solid rgba(255, 255, 255, 0.1); */
 }
 
 #planet-selector label {
     display: block;
-    margin-top: 150px;
     margin-bottom: 8px;
     font-size: 14px;
     text-transform: uppercase;
