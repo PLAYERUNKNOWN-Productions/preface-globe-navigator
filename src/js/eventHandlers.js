@@ -422,24 +422,6 @@ export class EventManager {
         this.isMarkerAnimating = false;
     }
 
-    latLongToPosition(lat, lng) {
-        // Convert lat/lng to 3D position on unit sphere
-        // Note: this assumes lat/lng are in radians (which they are in the manifest)
-        const phi = lat + Math.PI / 2; // Convert to spherical coordinate
-        const theta = lng;
-        
-        const x = Math.sin(phi) * Math.cos(theta);
-        const y = Math.cos(phi);
-        const z = Math.sin(phi) * Math.sin(theta);
-        
-        return new THREE.Vector3(x, y, z);
-    }
-
-    radiansToDegrees(radians) {
-        return radians * (180 / Math.PI);
-    }
-
-
     createArrowContainer() {
         this.arrowContainer = document.createElement('div');
         this.arrowContainer.className = 'arrow-container';

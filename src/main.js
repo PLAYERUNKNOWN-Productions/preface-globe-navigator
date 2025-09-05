@@ -14,7 +14,7 @@ class App {
     constructor() {
         this.container = document.getElementById('canvas-container');
         this.textureLoader = new TextureLoader();
-        this.currentPlanetIndex = 0; // Start with Mars1_4358 (index 5 in planets.json)
+        this.currentPlanetIndex = 0; 
         this.init();
     }
 
