@@ -442,6 +442,15 @@ export class EventManager {
 
     updatePlanetName(planet_name) {
         this.planet_name = planet_name;
+        
+        // Clear any existing marker and deep link when changing planets
+        this.deepLink.classList.remove('visible');
+        this.deepLinkAnchor.classList.remove('visible');
+        this.arrowContainer.classList.remove('visible');
+        this.marker.visible = false;
+        this.markerCore.visible = false;
+        this.isMarkerAnimating = false;
+        
         // Load biome data for new planet
         this.loadBiomeData();
     }
