@@ -170,7 +170,7 @@ export class EventManager {
             const point = intersects[0].point.clone();
             point.applyMatrix4(this.group.matrixWorld.clone().invert());
             const coords = getLatLong(point.normalize());
-            this.positionInfo.innerHTML = `Lat: ${coords.lat.toFixed(2)}° Long: ${coords.long.toFixed(2)}°`;
+            this.positionInfo.textContent = `Lat: ${coords.lat.toFixed(2)}° Long: ${coords.long.toFixed(2)}°`;
             
             this.cursor.position.copy(point.multiplyScalar(1.01));
             this.cursor.visible = true;
@@ -181,7 +181,7 @@ export class EventManager {
             }
         } else {
             // Not hovering over anything
-            this.positionInfo.innerHTML = 'Lat: -- Long: --';
+            this.positionInfo.textContent = 'Lat: -- Long: --';
             this.cursor.visible = false;
             
             if (!this.isDragging && this.isSphereHovered) {
@@ -291,7 +291,7 @@ export class EventManager {
         }
         this.isDragging = false;
         this.cursor.visible = false;
-        this.positionInfo.innerHTML = 'Lat: -- Long: --';
+        this.positionInfo.textContent = 'Lat: -- Long: --';
         // Reset cursor states
         this.container.classList.remove('hovering-sphere', 'dragging-sphere');
         this.isSphereHovered = false;
@@ -397,7 +397,7 @@ export class EventManager {
         this.deepLinkAnchor.dataset.lat = coords.lat.toFixed(2);
         this.deepLinkAnchor.dataset.long = coords.long.toFixed(2);
         this.deepLinkAnchor.href = 
-            `preface://bookmarks?longitude=${long_rad}&latitude=${lat_rad}&altitude=600000.586887&rotation=${camera_angles.yaw},${camera_angles.pitch},${camera_angles.roll}&name=preface_teleport&planet_name=${this.planet_name}`;
+            `https://preface.pp.studio/bookmarks?longitude=${long_rad}&latitude=${lat_rad}&altitude=600000.586887&rotation=${camera_angles.yaw},${camera_angles.pitch},${camera_angles.roll}&name=preface_teleport&planet_name=${this.planet_name}`;
     }
 
     updateMarker(normalizedPoint) {
