@@ -19,7 +19,8 @@ export class TextureLoader {
     }
 
     async loadTextures(planet_name) {
-        // directions order in array  ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
+        // assumes a set order cubemap
+        // directions order ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
         const urls = [0, 1, 2, 3, 4, 5].map( i => `./images/${planet_name}_${i}.png`)
 
         const loader = new THREE.CubeTextureLoader();
