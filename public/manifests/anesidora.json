@@ -1,7 +1,7 @@
 {
     "ml_assets": {
         "basemap": {
-            "id": "pandora",
+            "id": "anesidora",
             "version": "1.0.0"
         },
         "ml_model": {
@@ -35,34 +35,34 @@
         "cml_model_filename": "agents/FusedModelNnef",
         "basemap_files": [
             {
-                "basemap": "Agents/Basemaps/pandora/face_0_height_6.pp_bin_dem",
-                "masks": "Agents/Basemaps/pandora/face_0_masks_6.npy",
-                "texture": "Agents/Basemaps/pandora/face_0_texture_6.npy"
+                "basemap": "Agents/Basemaps/anesidora/face_0_height_6.pp_bin_dem",
+                "masks": "Agents/Basemaps/anesidora/face_0_masks_6.npy",
+                "texture": "Agents/Basemaps/anesidora/face_0_texture_6.npy"
             },
             {
-                "basemap": "Agents/Basemaps/pandora/face_1_height_6.pp_bin_dem",
-                "masks": "Agents/Basemaps/pandora/face_1_masks_6.npy",
-                "texture": "Agents/Basemaps/pandora/face_1_texture_6.npy"
+                "basemap": "Agents/Basemaps/anesidora/face_1_height_6.pp_bin_dem",
+                "masks": "Agents/Basemaps/anesidora/face_1_masks_6.npy",
+                "texture": "Agents/Basemaps/anesidora/face_1_texture_6.npy"
             },
             {
-                "basemap": "Agents/Basemaps/pandora/face_2_height_6.pp_bin_dem",
-                "masks": "Agents/Basemaps/pandora/face_2_masks_6.npy",
-                "texture": "Agents/Basemaps/pandora/face_2_texture_6.npy"
+                "basemap": "Agents/Basemaps/anesidora/face_2_height_6.pp_bin_dem",
+                "masks": "Agents/Basemaps/anesidora/face_2_masks_6.npy",
+                "texture": "Agents/Basemaps/anesidora/face_2_texture_6.npy"
             },
             {
-                "basemap": "Agents/Basemaps/pandora/face_3_height_6.pp_bin_dem",
-                "masks": "Agents/Basemaps/pandora/face_3_masks_6.npy",
-                "texture": "Agents/Basemaps/pandora/face_3_texture_6.npy"
+                "basemap": "Agents/Basemaps/anesidora/face_3_height_6.pp_bin_dem",
+                "masks": "Agents/Basemaps/anesidora/face_3_masks_6.npy",
+                "texture": "Agents/Basemaps/anesidora/face_3_texture_6.npy"
             },
             {
-                "basemap": "Agents/Basemaps/pandora/face_4_height_6.pp_bin_dem",
-                "masks": "Agents/Basemaps/pandora/face_4_masks_6.npy",
-                "texture": "Agents/Basemaps/pandora/face_4_texture_6.npy"
+                "basemap": "Agents/Basemaps/anesidora/face_4_height_6.pp_bin_dem",
+                "masks": "Agents/Basemaps/anesidora/face_4_masks_6.npy",
+                "texture": "Agents/Basemaps/anesidora/face_4_texture_6.npy"
             },
             {
-                "basemap": "Agents/Basemaps/pandora/face_5_height_6.pp_bin_dem",
-                "masks": "Agents/Basemaps/pandora/face_5_masks_6.npy",
-                "texture": "Agents/Basemaps/pandora/face_5_texture_6.npy"
+                "basemap": "Agents/Basemaps/anesidora/face_5_height_6.pp_bin_dem",
+                "masks": "Agents/Basemaps/anesidora/face_5_masks_6.npy",
+                "texture": "Agents/Basemaps/anesidora/face_5_texture_6.npy"
             }
         ],
         "quadtree_basemap_mapping": {
