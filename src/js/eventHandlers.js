@@ -16,7 +16,6 @@ export class EventManager {
         
         // DOM elements
         this.positionInfo = document.getElementById('position-info');
-        this.biomeInfo = document.getElementById('biome-info');
         this.deepLink = document.getElementById('deep-link');
         this.deepLinkAnchor = document.getElementById('deep-link-anchor');
         
@@ -58,9 +57,6 @@ export class EventManager {
         // Add method to check if we're interacting with UI
         this.isInteractingWithUI = false;
         
-        // Biome markers
-        this.biomeMarkers = [];
-        this.biomeData = null;
         
         // Add event listeners for UI interaction
         document.addEventListener('mousedown', (e) => {
@@ -76,9 +72,6 @@ export class EventManager {
 
         // Create controls info overlay
         this.createControlsInfo();
-        
-        // Load biome data for current planet
-        this.loadBiomeData();
     }
 
     setupMarkers() {
@@ -172,33 +165,12 @@ export class EventManager {
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const intersects = this.raycaster.intersectObject(this.sphere);
 
-        // Check if hovering over biome markers first
-        const biomeIntersects = this.raycaster.intersectObjects(this.biomeMarkers);
-        if (biomeIntersects.length > 0) {
-            const marker = biomeIntersects[0].object;
-            const biomeInfo = marker.userData;
-            const latDeg = this.radiansToDegrees(biomeInfo.latitude);
-            const lngDeg = this.radiansToDegrees(biomeInfo.longitude);
-            
-            // Show coordinates in position info
-            this.positionInfo.innerHTML = `Lat: ${latDeg.toFixed(2)}° Long: ${lngDeg.toFixed(2)}°`;
-            
-            // Show biome info in separate panel
-            this.biomeInfo.innerHTML = `
-                <div style="font-weight: bold; color: #00ff00; margin-bottom: 2px;">${biomeInfo.name}</div>
-                <div style="color: #88ff88; font-size: 0.9em;">${biomeInfo.biomeType.replace(/_/g, ' ')}</div>
-            `;
-            this.biomeInfo.style.display = 'block';
-            this.cursor.visible = false;
-        } else if (intersects.length > 0) {
+        if (intersects.length > 0) {
             // Hovering over planet surface
             const point = intersects[0].point.clone();
             point.applyMatrix4(this.group.matrixWorld.clone().invert());
             const coords = getLatLong(point.normalize());
             this.positionInfo.innerHTML = `Lat: ${coords.lat.toFixed(2)}° Long: ${coords.long.toFixed(2)}°`;
-            
-            // Hide biome info panel
-            this.biomeInfo.style.display = 'none';
             
             this.cursor.position.copy(point.multiplyScalar(1.01));
             this.cursor.visible = true;
@@ -210,7 +182,6 @@ export class EventManager {
         } else {
             // Not hovering over anything
             this.positionInfo.innerHTML = 'Lat: -- Long: --';
-            this.biomeInfo.style.display = 'none';
             this.cursor.visible = false;
             
             if (!this.isDragging && this.isSphereHovered) {
@@ -321,7 +292,6 @@ export class EventManager {
         this.isDragging = false;
         this.cursor.visible = false;
         this.positionInfo.innerHTML = 'Lat: -- Long: --';
-        this.biomeInfo.style.display = 'none';
         // Reset cursor states
         this.container.classList.remove('hovering-sphere', 'dragging-sphere');
         this.isSphereHovered = false;
@@ -450,45 +420,6 @@ export class EventManager {
         this.marker.visible = false;
         this.markerCore.visible = false;
         this.isMarkerAnimating = false;
-        
-        // Load biome data for new planet
-        this.loadBiomeData();
-    }
-
-    // Biome markers functionality
-    async loadBiomeData() {
-        if (!this.planet_name) return;
-        
-        try {
-            const response = await fetch(`./manifests/${this.planet_name}.json`);
-            if (response.ok) {
-                this.biomeData = await response.json();
-                this.updateBiomeMarkers();
-                console.log(`Loaded biome data for ${this.planet_name}`);
-            } else {
-                console.log(`No manifest found for ${this.planet_name}`);
-                this.clearBiomeMarkers();
-            }
-        } catch (error) {
-            console.log(`Failed to load manifest for ${this.planet_name}:`, error);
-            this.clearBiomeMarkers();
-        }
-    }
-
-    parseBiomeLocation(locationUrl) {
-        try {
-            const url = new URL(locationUrl);
-            const longitude = parseFloat(url.searchParams.get('longitude'));
-            const latitude = parseFloat(url.searchParams.get('latitude'));
-            const name = url.searchParams.get('name') || 'Unknown';
-            
-            if (!isNaN(longitude) && !isNaN(latitude)) {
-                return { longitude, latitude, name };
-            }
-        } catch (error) {
-            console.warn('Failed to parse biome location:', locationUrl, error);
-        }
-        return null;
     }
 
     latLongToPosition(lat, lng) {
@@ -508,84 +439,6 @@ export class EventManager {
         return radians * (180 / Math.PI);
     }
 
-    createBiomeMarker(biomeType, position, name, lat, lng) {
-        // Create different colored markers for different biome types
-        const colors = {
-            'OCEAN': 0x0077ff,
-            'TROPICAL_MOIST_BROADLEAF_FOREST': 0x00ff44,
-            'TROPICAL_DRY_BROADLEAF_FOREST': 0x44aa00,
-            'TROPICAL_CONIFEROUS_FOREST': 0x228833,
-            'TEMPERATE_BROADLEAF_FOREST': 0x66bb33,
-            'TEMPERATE_CONIFER_FOREST': 0x004400,
-            'TAIGA': 0x335533,
-            'TROPICAL_GRASSLANDS_SAVANNA': 0xaaaa00,
-            'TEMPERATE_GRASSLANDS_SAVANNA': 0x88aa44,
-            'FLOODED_GRASSLANDS_SAVANNAS': 0x44aa88,
-            'MONTANE_GRASSLANDS_SHRUBLANDS': 0x886644,
-            'TUNDRA': 0xcccccc,
-            'MEDITERRANEAN_FORESTS': 0x88aa66,
-            'DESERT_XERIC_SHRUBLANDS': 0xcc8844,
-            'MANGROVES': 0x448844,
-            'SNOW': 0xffffff,
-            'LAKES': 0x4488ff
-        };
-        
-        const color = colors[biomeType] || 0x888888;
-        
-        // Create smaller markers than user markers to distinguish them
-        const geometry = new THREE.SphereGeometry(0.01, 12, 12);
-        const material = new THREE.MeshBasicMaterial({
-            color: color,
-            transparent: true,
-            opacity: 0.7,
-            side: THREE.DoubleSide
-        });
-        
-        const marker = new THREE.Mesh(geometry, material);
-        marker.position.copy(position.multiplyScalar(1.005)); // Slightly above surface
-        marker.userData = { 
-            biomeType, 
-            name, 
-            isBiomeMarker: true, 
-            position: position.clone(),
-            latitude: lat,
-            longitude: lng
-        };
-        
-        return marker;
-    }
-
-    updateBiomeMarkers() {
-        // Clear existing biome markers
-        this.clearBiomeMarkers();
-        
-        if (!this.biomeData || !this.biomeData.biomes) return;
-        
-        for (const biome of this.biomeData.biomes) {
-            if (!biome.locations || biome.locations.length === 0) continue;
-            
-            for (const locationUrl of biome.locations) {
-                const location = this.parseBiomeLocation(locationUrl);
-                if (location) {
-                    const position = this.latLongToPosition(location.latitude, location.longitude);
-                    const marker = this.createBiomeMarker(biome.name, position, location.name, location.latitude, location.longitude);
-                    this.biomeMarkers.push(marker);
-                    this.group.add(marker);
-                }
-            }
-        }
-        
-        console.log(`Created ${this.biomeMarkers.length} biome markers`);
-    }
-
-    clearBiomeMarkers() {
-        for (const marker of this.biomeMarkers) {
-            this.group.remove(marker);
-            marker.geometry.dispose();
-            marker.material.dispose();
-        }
-        this.biomeMarkers = [];
-    }
 
     createArrowContainer() {
         this.arrowContainer = document.createElement('div');
@@ -604,12 +457,10 @@ export class EventManager {
             <div class="controls-title">Controls</div>
             <div class="control-item">🖱️ Drag: Orbit camera</div>
             <div class="control-item">⚙️ Mouse wheel: Zoom</div>
-            <div class="control-item">🎯 Click: Create marker</div>
-            <div class="control-item">🌍 Small dots: Biome locations</div>
+            <div class="control-item">🎯 Click: Create teleport</div>
             <div class="control-item">← → Arrow keys: Change planet</div>
         `;
         document.body.appendChild(controlsInfo);
     }
 
-    // ... Other handler methods ...
 } 

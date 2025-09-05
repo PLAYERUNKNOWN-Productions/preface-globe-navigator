@@ -148,8 +148,6 @@ class App {
             // Update dropdown selection
             const select = document.getElementById('planet-select');
             select.value = planetIndex;
-            
-            console.log(`Switched to planet: ${planetName}`);
         } catch (error) {
             console.error(`Failed to load textures for ${planetName}:`, error);
         }
