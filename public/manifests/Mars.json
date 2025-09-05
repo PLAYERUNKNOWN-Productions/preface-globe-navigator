@@ -26,7 +26,7 @@
         "generation_version": 2,
         "max_height": 8660.0,
         "min_height": -8188.27,
-        "ocean_level": -7000.0,
+        "ocean_level": 0.0,
         "mean_radius": 2774388,
         "min_level": 3,
         "max_level": 23,
